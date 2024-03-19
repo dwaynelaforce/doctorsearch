@@ -2,8 +2,13 @@ from urllib.parse import quote
 
 import requests
 
-import doctors
-from search import Results, QueryStatus
+from base_classes import (
+    Doctor, 
+    Results, 
+    QueryStatus, 
+    LicenseStatus, 
+    MedicalLicense
+)
 
 URL = "https://data.wa.gov/resource/qxh8-f4bd.json"
 
@@ -18,7 +23,7 @@ def generate_soql(**kwargs: dict[str, str]) -> str:
     soql = " AND ".join(arguments)
     return soql
 
-def license_search(doctor: doctors.Doctor) -> Results:
+def license_search(doctor: Doctor) -> Results:
     print("Searching for: ", doctor)
     soql = generate_soql(lastname=doctor.lastname, firstname=doctor.firstname)
     url = f"{URL}?$where={quote(soql)}"
@@ -44,16 +49,16 @@ def license_search(doctor: doctors.Doctor) -> Results:
     lic_status = dinfo['status'].casefold()
     
     if 'active' in lic_status:
-        status = doctors.LicenseStatus.ACTIVE
+        status = LicenseStatus.ACTIVE
     elif 'expired' in lic_status:
-        status = doctors.LicenseStatus.EXPIRED
+        status = LicenseStatus.EXPIRED
     elif 'suspended' in lic_status:
-        status = doctors.LicenseStatus.SUSPENDED
+        status = LicenseStatus.SUSPENDED
     elif 'revoke' in lic_status or 'surrender' in lic_status:
-        status = doctors.LicenseStatus.SURRENDERED_OR_REVOKED
+        status = LicenseStatus.SURRENDERED_OR_REVOKED
 
-    license = doctors.MedicalLicense(
-        state=doctors.State.WA, 
+    license = MedicalLicense(
+        state=State.WA, 
         status=status,
         id=dinfo['credentialnumber'],
         discipline=dinfo['actiontaken'].casefold() == 'yes' 
