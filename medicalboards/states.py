@@ -1,28 +1,13 @@
 from enum import Enum
 
-
-class LicenseStatus(Enum):
-    ACTIVE = 0
-    EXPIRED = 1
-    SUSPENDED = 2
-    SURRENDERED_OR_REVOKED = 3
-
-
-class MedicalDegree(Enum):
-    MD = "M.D. - Medical Doctor"
-    DO = "D.O. - Osteopathic Doctor"
-
-
-class QueryStatus(Enum):
-    SUCCESS = 0
-    ERROR = 1
-    MULTIPLE_RESULTS = 2
-    NOT_FOUND = 3
-
+from exceptions import NotFoundError
 
 class State(Enum):
-    # https://en.wikipedia.org/wiki/#v 
-    # List_of_states_and_territories_of_the_United_States#States.
+    """
+    Enum of US States and Territories compiled from Wikipedia.
+    https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States.
+    """
+    
     AK = "Alaska"
     AL = "Alabama"
     AR = "Arkansas"
@@ -73,12 +58,14 @@ class State(Enum):
     WI = "Wisconsin"
     WV = "West Virginia"
     WY = "Wyoming"
-    # https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States#Federal_district.
-    DC = "District of Columbia",
-    # https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States#Inhabited_territories.
-    AS = "American Samoa",
-    GU = "Guam GU",
-    MP = "Northern Mariana Islands",
-    PR = "Puerto Rico PR",
-    VI = "U.S. Virgin Islands",
+    DC = "District of Columbia"
+    AS = "American Samoa"
+    GU = "Guam GU"
+    MP = "Northern Mariana Islands"
+    PR = "Puerto Rico PR"
+    VI = "U.S. Virgin Islands"
 
+def get_state(state_or_abbr: State | str) -> State:
+    if isinstance(state_or_abbr, State):
+        return state_or_abbr
+    return getattr(State, state_or_abbr.upper())

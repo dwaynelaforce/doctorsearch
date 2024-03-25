@@ -2,11 +2,16 @@ from urllib.parse import quote
 
 import requests
 
-from base_classes import (
+from medicalboards.states import State
+from doctors import (
     Doctor, 
-    Results, 
-    QueryStatus, 
     LicenseStatus, 
+)
+from search import (
+    Query, 
+    Result,
+    QueryStatus,
+    ResultStatus,
     MedicalLicense
 )
 
@@ -23,27 +28,27 @@ def generate_soql(**kwargs: dict[str, str]) -> str:
     soql = " AND ".join(arguments)
     return soql
 
-def license_search(doctor: Doctor) -> Results:
+def license_search(doctor: Doctor) -> Result:
     print("Searching for: ", doctor)
     soql = generate_soql(lastname=doctor.lastname, firstname=doctor.firstname)
     url = f"{URL}?$where={quote(soql)}"
     json_results: dict | list = requests.get(url, timeout=30).json()
 
     if isinstance(json_results, dict):
-        response = Results(QueryStatus.ERROR)
+        result = Result(status=ResultStatus.ERROR)
         if msg := json_results.get("message", ""):
-            response.notes.append(msg)
-        return response
+            result.notes.append(msg)
+        return result
 
     if not len(json_results):
-        return Results(QueryStatus.NOT_FOUND)
+        return Result(status=ResultStatus.NOT_FOUND)
 
     if len(json_results) > 1:
         notes = [
             f'{doc.get("lastname")}, {doc.get("firstname")} {doc.get("credentialnumber", [])[:2]} '
             for doc in json_results
         ]
-        return Results(QueryStatus.MULTIPLE_RESULTS, notes=notes)
+        return Result(status=ResultStatus.MULTIPLE_RESULTS, notes=notes)
 
     dinfo = json_results[0]
     lic_status = dinfo['status'].casefold()
@@ -64,5 +69,5 @@ def license_search(doctor: Doctor) -> Results:
         discipline=dinfo['actiontaken'].casefold() == 'yes' 
     )
     
-    results = Results(status=QueryStatus.SUCCESS, license=license)
-    return results
+    result = Result(status=ResultStatus.FOUND, license=license)
+    return result

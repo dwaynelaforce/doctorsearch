@@ -1,13 +1,19 @@
-from wa import license_search
-from base_classes import Doctor
+from search import InquiryManager
 
 def main():
     lname = input("last name: ")
     fname = input("first name: ")
     mname = input("middle name or initial: ")
 
-    results = license_search(Doctor(lname, fname, mname))
-    print(results)
+    manager = InquiryManager()
+    query = {
+        'lastname': lname,
+        'firstname': fname,
+        'state': "WA"
+    }
+    manager.add_query(**query)
+    manager.exec_all_queries()
+    manager.display_results()
 
 if __name__ == "__main__":
     main()
