@@ -1,61 +1,58 @@
-from typing import List, Dict
-from enum import Enum
-from io import StringIO
-from importlib import import_module
-from dataclasses import dataclass, field
+"""
+This module intends to provide all the necessary classes for general search
+functionality including standardization with dataclasses and enums.
+"""
+
 from pprint import pprint
+from typing import List, Dict, Type
+from importlib import import_module
 
-from doctors import Doctor, MedicalLicense
-from medicalboards import BoardsDirectory
+from medicalboards import StateMedicalBoardInterface
 from medicalboards.states import State, get_state
-
-
-class QueryStatus(Enum):
-    IN_PROGRESS = 0
-    COMPLETE = 1
-
-class ResultStatus(Enum):
-    FOUND = 0
-    ERROR = 1
-    MULTIPLE_RESULTS = 2
-    NOT_FOUND = 3
-    PARTIAL_MATCH = 4
-    INCOMPLETE = 5
-
-@dataclass
-class Query: 
-    doctor: Doctor
-    state: State | None = None
-    status: QueryStatus = QueryStatus.IN_PROGRESS
-
-@dataclass
-class Result:
-    query: Query | None = None
-    license: MedicalLicense | None = None
-    notes: list[str] = field(default_factory=list)
-    status: ResultStatus = ResultStatus.INCOMPLETE
+from enums_and_dataclasses import (
+    Query, 
+    QueryStatus,
+    Result,
+    Doctor
+)
 
 class InquiryManager:
+
+    """
+    Class for performing the main function of searching for a doctor across
+    multiple state medical boards.
+    """
 
     def __init__(self):
         self.queries: List[Query] = []
         self.results: List[Result] = []
         self.resultsmap: Dict[State, Result] = []
 
-    def exec_all_queries(self):
-        for query in self.queries:
-            self.exec_single_state_query(query)
+    @staticmethod
+    def _get_state_interface(state: State) -> Type[StateMedicalBoardInterface]:
+        """
+        Given a state, imports and then returns the appropriate interface 
+        class for the state's medical board.
+        """ 
+        module_name = f"medicalboards.stateboards.{state.name.casefold()}"
+        module = import_module(module_name)
+        return getattr(module, "MedicalBoardInterface")
 
-    def exec_single_state_query(self, query: Query) -> Result:
-        state_abbr: str = query.state.name
-        modname = f"medicalboards.stateboards.{state_abbr.casefold()}"
-        module = import_module(modname)
-        result: Result = module.license_search(query.doctor)
+    def exec_all_queries(self) -> None:
+        """Executes all queries."""
+        for query in self.queries:
+            self.exec_query(query)
+
+    def exec_query(self, query: Query) -> Result:
+        
+        interface = self._get_state_interface(query.state)
+        result = interface.license_search(query.doctor)
         query.status = QueryStatus.COMPLETE
         result.query = query
         self.results.append(result)
 
-    def _build_query(self, **params) -> Query:
+    @staticmethod
+    def _build_query(**params) -> Query:
         state = get_state(params.pop("state"))
         lastname = params.pop("lastname")
         firstname = params.pop("firstname")
