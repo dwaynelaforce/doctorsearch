@@ -16,16 +16,18 @@ class MedicalDegree(Enum):
     DPM = "D.P.M. - Podiatrist" 
 
 class QueryStatus(Enum):
-    IN_PROGRESS = 0
-    COMPLETE = 1
+    QUEUED = "Queued"
+    IN_PROGRESS = "In Progress"
+    COMPLETE = "Complete"
 
 class ResultStatus(Enum):
-    FOUND = 0
-    ERROR = 1
-    MULTIPLE_RESULTS = 2
-    NOT_FOUND = 3
-    PARTIAL_MATCH = 4
-    INCOMPLETE = 5
+    FOUND = "Found"
+    ERROR = "Error"
+    MULTIPLE_RESULTS = "Multiple Results"
+    NOT_FOUND = "Not Found"
+    PARTIAL_MATCH = "Partial Match"
+    INCOMPLETE = "Incomplete"
+    DATA_NOT_AVAILABLE = "Data Not Available"
 
 class DatabaseType(Enum):
     SQLITE = "SQLite"
