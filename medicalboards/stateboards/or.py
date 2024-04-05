@@ -14,11 +14,15 @@ from enums_and_dataclasses import (
 # the OMB is planning on making a dataset public in the next 2 years
 # right now only way to check any doc is manual search.
 
+
+
 class MedicalBoardInterface(StateMedicalBoardInterface):
     state = State.OR
 
+    @classmethod
     def license_search(cls, doctor: Doctor) -> Result:
         res = Result()
+        res.status = ResultStatus.DATA_NOT_AVAILABLE
         res.notes.append(
             "No developer API or dataset is available from Oregon Medical Board as of April 2024. "
             "According to the Oregon Open Data Progress Report, this is planned to be released "
