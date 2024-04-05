@@ -2,8 +2,9 @@ from medicalboards.states import State
 from search import InquiryManager
 
 SUPPORTED_STATES = [
-    State.AK,
-    State.WA
+    State.AK, # only partial support, API does not return license action data (manual search only)
+    State.WA,
+    State.OR, # no public dataset available, planned for release in 2 years
 ]
 
 def main():
